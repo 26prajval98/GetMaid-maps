@@ -102,4 +102,72 @@ router.get('/distance/:pin1/:pin2', function (req, res, next) {
 	}
 })
 
+router.get('/byplace', function (req, res, next) {
+	if (req.query.qs) {
+		http.get("https://apis.mapmyindia.com/advancedmaps/v1/ga4airl3ue5u8gq56l3zsgoklhbiu31m/geo_code?addr=" + req.query.qs, (req) => {
+			var body
+			req.on("data", (data) => {
+				body += data
+			})
+			req.on("end", () => {
+				body = body.slice(body.indexOf("{"))
+				body = JSON.parse(body)
+				if (body.results.length)
+					res.json({ lat: body.results[0].lat, lon: body.results[0].lng })
+				else {
+					res.statusCode = 404
+					res.json({Error : "Place not found"})
+				}
+			})
+		})
+	}
+	else{
+		res.statusCode = 404
+		res.json({Error : "Place not found"})
+	}
+});
+
+router.get('/byplace/:place1/:place2', function (req, res, next) {
+	if (req.params.place1 && req.params.place2) {
+		http.get("https://apis.mapmyindia.com/advancedmaps/v1/ga4airl3ue5u8gq56l3zsgoklhbiu31m/geo_code?addr=" + req.params.place1, (r) => {
+			var body
+			r.on("data", (data) => {
+				body += data
+			})
+			r.on("end", () => {
+				body = body.slice(body.indexOf("{"))
+				body = JSON.parse(body)
+				if (body.results.length) {
+					var lat1 = Number(body.results[0].lat)
+					var lon1 = Number(body.results[0].lng)
+					http.get("https://apis.mapmyindia.com/advancedmaps/v1/ga4airl3ue5u8gq56l3zsgoklhbiu31m/geo_code?addr=" + req.params.place2, (req) => {
+						var body
+						req.on("data", (data) => {
+							body += data
+						})
+						req.on("end", () => {
+							body = body.slice(body.indexOf("{"))
+							body = JSON.parse(body)
+							if (body.results.length){
+								var lat2 = Number(body.results[0].lat)
+								var lon2 = Number(body.results[0].lng)
+								res.json({ "distance": distance(lat1, lon1, lat2, lon2) })
+							}
+							else {
+								res.statusCode = 404
+								res.json({Error : "place2 not found"})
+							}
+						})
+					})
+				}
+				else {
+					res.statusCode = 404
+					res.json({Error : "place1 not found"})
+				}
+			})
+		})
+	} else {
+		res.json({ Error : "place1 and place2 must be present" })
+	}
+});
 module.exports = router;
