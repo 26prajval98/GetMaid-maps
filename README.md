@@ -12,7 +12,7 @@
 
     https://getmaid-maps.herokuapp.com/distance?lat1=<lat1>&lat2=<lat2>&lon1=<lon1>&lon2=<lon2>
 
-## Get point to point distance between two latitudes and longitudes
+## Get point to point distance between two pincodes
     
     https://getmaid-maps.herokuapp.com/distance/<pin1>/<pin2>
 
