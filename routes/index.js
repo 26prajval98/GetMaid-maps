@@ -22,17 +22,21 @@ function toRad(Value) {
 }
 
 router.get('/', function (req, res, next) {
-	http.get("https://apis.mapmyindia.com/advancedmaps/v1/ga4airl3ue5u8gq56l3zsgoklhbiu31m/geo_code?addr=" + req.query.pin, (req) => {
-		var body
-		req.on("data", (data) => {
-			body += data
+	if(req.query.pin){
+		http.get("https://apis.mapmyindia.com/advancedmaps/v1/ga4airl3ue5u8gq56l3zsgoklhbiu31m/geo_code?addr=" + req.query.pin, (req) => {
+			var body
+			req.on("data", (data) => {
+				body += data
+			})
+			req.on("end", () => {
+				body = body.slice(body.indexOf("{"))
+				body = JSON.parse(body)
+				res.json({ lat: body.results[0].lat, lon: body.results[0].lng })
+			})
 		})
-		req.on("end", () => {
-			body = body.slice(body.indexOf("{"))
-			body = JSON.parse(body)
-			res.json({ lat: body.results[0].lat, lon: body.results[0].lng })
-		})
-	})
+	}
+	else
+		res.json({"Error" : "Enter Pin"})
 });
 
 router.get('/distance', function (req, res, next) {
